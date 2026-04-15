@@ -1,0 +1,26 @@
+{
+email admin@domain.tld 
+  acme_ca https://acme.domain.tld:9000/acme/acme/directory
+}
+
+:80 {                                                                                      
+  redir https://{host}{uri} permanent
+}
+
+https://nextcloud.domain.tld:443 {
+  
+  handle_path /whiteboard/* {
+    reverse_proxy nextcloud-whiteboard:3002
+  }
+
+  reverse_proxy nextcloud:80
+}
+
+https://office.domain.tld:443 {
+
+  handle_path /welcome/* {
+    reverse_proxy nextcloud:80
+  }
+
+  reverse_proxy onlyoffice-documentserver:80 
+}

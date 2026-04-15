@@ -1,0 +1,232 @@
+services:
+  caddy:
+    image: docker.io/caddy/caddy:alpine
+    container_name: caddy
+    depends_on:
+      - nextcloud
+      - onlyoffice-documentserver
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    ports:
+      - "443:443"
+    networks:
+      - whiteboard
+      - nextcloud 
+      - office
+    volumes:
+      - ./configs/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+  nextcloud:
+    image: docker.io/library/nextcloud:33-apache
+    container_name: nextcloud
+    env_file: 
+      - ./envs/nextcloud.env
+    depends_on:
+      - nextcloud-postgres
+      - nextcloud-redis
+      - onlyoffice-documentserver
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - nextcloud 
+      - nextcloud-redis
+      - nextcloud-postgres
+    volumes:
+      - nextcloud_data:/var/www/html
+      - nextcloud_config:/var/www/html/config
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      - ./hooks/before-starting/:/docker-entrypoint-hooks.d/before-starting:ro
+      - ./hooks/post-installation/:/docker-entrypoint-hooks.d/post-installation:ro
+    restart: unless-stopped
+
+  nextcloud-postgres:
+    image: cgr.dev/chainguard/postgres:latest
+    container_name: nextcloud-postgres
+    env_file: 
+      - ./envs/nextcloud-postgres.env
+    networks:
+      - nextcloud-postgres
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - FOWNER
+      - FSETID
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    volumes:
+      - nextcloud_postgres_data:/var/lib/postgresql/data
+    tmpfs:
+      - /var/run/postgresql
+    restart: unless-stopped
+
+  nextcloud-redis:
+    image: cgr.dev/chainguard/redis:latest
+    container_name: nextcloud-redis
+    networks:
+      - nextcloud-redis
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FSETID
+      - SETUID
+      - SETGID
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    entrypoint: ["redis-server"]
+    command: ["/etc/redis/redis.conf"]
+    volumes:
+      - nextcloud_redis_data:/data
+      - ./configs/nextcloud-redis.conf:/etc/redis/redis.conf:ro
+    restart: unless-stopped
+    
+  onlyoffice-documentserver:
+    image: docker.io/onlyoffice/documentserver 
+    container_name: onlyoffice-documentserver
+    env_file: 
+      - ./envs/onlyoffice-documentserver.env
+    depends_on:
+      - onlyoffice-postgres
+      - onlyoffice-rabbitmq
+    networks:
+      - onlyoffice_postgres
+      - onlyoffice-rabbitmq
+      - office
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - NET_BIND_SERVICE
+      - KILL
+    security_opt:
+      - no-new-privileges:true
+    #stdin_open: true
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_log:/var/log/onlyoffice
+      - onlyoffice_cache:/var/lib/onlyoffice
+      - onlyoffice_fonts:/usr/share/fonts
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      - /etc/ssl/certs/ca-certificates.crt:/var/www/onlyoffice/Data/certs/extra-ca-certs.pem:ro
+    restart: unless-stopped
+       
+  onlyoffice-rabbitmq:
+    image: docker.io/rabbitmq:3
+    container_name: onlyoffice-rabbitmq
+    env_file: 
+      - ./envs/onlyoffice-rabbitmq.env
+    networks:
+      - onlyoffice-rabbitmq
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/lib/rabbitmq
+      - /tmp
+    restart: unless-stopped
+
+  onlyoffice-postgres:
+    image: cgr.dev/chainguard/postgres:latest
+    container_name: onlyoffice-postgres
+    env_file: 
+      - ./envs/onlyoffice-postgres.env
+    networks:
+      - onlyoffice_postgres
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - FOWNER
+      - FSETID
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    volumes:
+      - onlyoffice_postgres_data:/var/lib/postgresql
+    restart: unless-stopped
+
+  nextcloud-whiteboard:
+    image: ghcr.io/nextcloud-releases/whiteboard:stable
+    container_name: nextcloud-whiteboard
+    env_file:
+      - ./envs/nextcloud-whiteboard.env
+    depends_on:
+      - nextcloud
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    networks:
+      - whiteboard
+    tmpfs:
+      - /tmp:noexec,nosuid,nodev
+    volumes:
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    restart: unless-stopped
+
+networks:
+  nextcloud-postgres:
+    internal: true
+  nextcloud-redis:
+    internal: true
+  whiteboard:
+    internal: true
+  nextcloud:
+  office:
+  onlyoffice_postgres:
+    internal: true
+  onlyoffice-rabbitmq:
+    internal: true
+
+volumes:
+  caddy_data:
+  caddy_config:
+  nextcloud_data:
+  nextcloud_config:
+  nextcloud_redis_data:
+  nextcloud_postgres_data:
+  onlyoffice_log:
+  onlyoffice_data:
+  onlyoffice_cache:
+  onlyoffice_fonts:
+  onlyoffice_postgres_data:
+
