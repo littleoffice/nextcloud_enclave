@@ -1,0 +1,51 @@
+name: Renovate
+
+# Runs Renovate against this repository on a schedule (and on demand).
+# Renovate reads ./renovate.json, then opens PRs that update the image tags
+# AND the pinned sha256 digests in docker-compose.yaml.
+
+on:
+  schedule:
+    # Mondays at 04:00 UTC. The renovate.json schedule narrows the actual
+    # window further (Europe/Berlin), this cron just wakes the runner up.
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: "Dry run (log only, no branches/PRs)"
+        type: boolean
+        default: false
+      logLevel:
+        description: "Log level"
+        type: choice
+        options: [info, debug]
+        default: info
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.3
+
+      - name: Configure dry-run
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dryRun }}
+        run: echo "RENOVATE_DRY_RUN=full" >> "$GITHUB_ENV"
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v46.1.19
+        with:
+          configurationFile: renovate.json
+          token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_ONBOARDING: "false"
+          RENOVATE_PLATFORM: github
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}

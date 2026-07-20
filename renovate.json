@@ -1,0 +1,40 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "docker:pinDigests",
+    "docker:enableMajor"
+  ],
+  "timezone": "Europe/Berlin",
+  "schedule": ["before 06:00 on monday"],
+  "labels": ["dependencies"],
+  "commitMessagePrefix": "chore(deps):",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "schedule": ["at any time"]
+  },
+  "packageRules": [
+    {
+      "description": "Group all digest-only bumps (floating tags: latest/stable/alpine/3 and the untagged onlyoffice image) into one weekly PR to cut noise.",
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["digest", "pin", "pinDigest"],
+      "groupName": "container digests",
+      "commitMessageTopic": "container image digests"
+    },
+    {
+      "description": "Group minor/patch tag bumps together.",
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "container images (minor/patch)"
+    },
+    {
+      "description": "Surface major upgrades (e.g. nextcloud 33->34, rabbitmq 3->4) but require manual approval via the dependency dashboard before a PR is opened.",
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
+}
