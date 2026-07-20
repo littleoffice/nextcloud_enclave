@@ -6,9 +6,12 @@ name: Renovate
 
 on:
   schedule:
-    # Mondays at 04:00 UTC. The renovate.json schedule narrows the actual
+    # Daily at 04:00 UTC. The renovate.json schedule narrows the actual
     # window further (Europe/Berlin), this cron just wakes the runner up.
-    - cron: "0 4 * * 1"
+    # NOTE: GitHub only fires `schedule` (and shows `workflow_dispatch`)
+    # for workflows present on the DEFAULT branch. On a feature branch
+    # this file does nothing at all.
+    - cron: "0 4 * * *"
   workflow_dispatch:
     inputs:
       dryRun:

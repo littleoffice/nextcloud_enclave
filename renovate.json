@@ -6,7 +6,7 @@
     "docker:enableMajor"
   ],
   "timezone": "Europe/Berlin",
-  "schedule": ["before 06:00 on monday"],
+  "schedule": ["before 06:00"],
   "labels": ["dependencies"],
   "commitMessagePrefix": "chore(deps):",
   "prConcurrentLimit": 5,
@@ -18,7 +18,7 @@
   },
   "packageRules": [
     {
-      "description": "Group all digest-only bumps (floating tags: latest/stable/alpine/3 and the untagged onlyoffice image) into one weekly PR to cut noise.",
+      "description": "Group all digest-only bumps (floating tags: latest/stable/alpine/3 and the untagged onlyoffice image) into a single PR to cut noise.",
       "matchManagers": ["docker-compose"],
       "matchUpdateTypes": ["digest", "pin", "pinDigest"],
       "groupName": "container digests",
