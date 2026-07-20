@@ -1,6 +1,6 @@
 services:
   caddy:
-    image: docker.io/caddy/caddy:alpine
+    image: docker.io/caddy/caddy:alpine@sha256:ef2ad799652965da62f0548e15e00ebcef221dd6f29623d3455df6273ca39f46
     container_name: caddy
     depends_on:
       - nextcloud
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
 
   nextcloud:
-    image: docker.io/library/nextcloud:33-apache
+    image: docker.io/library/nextcloud:33-apache@sha256:d234808c4e63aad6889922228d64612a28682183dccaeac251db4db0be368aab
     container_name: nextcloud
     env_file: 
       - ./envs/nextcloud.env
@@ -58,7 +58,7 @@ services:
     restart: unless-stopped
 
   nextcloud-postgres:
-    image: cgr.dev/chainguard/postgres:latest
+    image: cgr.dev/chainguard/postgres:latest@sha256:833bd9897f70176303e5a9347bdfb4596272176523b3d205dbad93e4adb62227
     container_name: nextcloud-postgres
     env_file: 
       - ./envs/nextcloud-postgres.env
@@ -83,7 +83,7 @@ services:
     restart: unless-stopped
 
   nextcloud-redis:
-    image: cgr.dev/chainguard/redis:latest
+    image: cgr.dev/chainguard/redis:latest@sha256:a09b265c2968a699b2434d212ad4e4cf550bf8bad32a8ed3a0935b8c805d24b8
     container_name: nextcloud-redis
     networks:
       - nextcloud-redis
@@ -105,7 +105,7 @@ services:
     restart: unless-stopped
     
   onlyoffice-documentserver:
-    image: docker.io/onlyoffice/documentserver 
+    image: docker.io/onlyoffice/documentserver@sha256:e3da62a847b9a5d51a11f73cfea1d9c13c3be3809614490d4edddcf01dcf919b 
     container_name: onlyoffice-documentserver
     env_file: 
       - ./envs/onlyoffice-documentserver.env
@@ -139,7 +139,7 @@ services:
     restart: unless-stopped
        
   onlyoffice-rabbitmq:
-    image: docker.io/rabbitmq:3
+    image: docker.io/rabbitmq:3@sha256:87178a0ee3e2f52980ba356d38646ed1056705ff2d5ff281f8965456eaa0c1e3
     container_name: onlyoffice-rabbitmq
     env_file: 
       - ./envs/onlyoffice-rabbitmq.env
@@ -161,7 +161,7 @@ services:
     restart: unless-stopped
 
   onlyoffice-postgres:
-    image: cgr.dev/chainguard/postgres:latest
+    image: cgr.dev/chainguard/postgres:latest@sha256:833bd9897f70176303e5a9347bdfb4596272176523b3d205dbad93e4adb62227
     container_name: onlyoffice-postgres
     env_file: 
       - ./envs/onlyoffice-postgres.env
@@ -184,7 +184,7 @@ services:
     restart: unless-stopped
 
   nextcloud-whiteboard:
-    image: ghcr.io/nextcloud-releases/whiteboard:stable
+    image: ghcr.io/nextcloud-releases/whiteboard:stable@sha256:b60b7633f90d106ac6922f9bc27e1a1ca2442488b740fefdae4c812f34e9cebc
     container_name: nextcloud-whiteboard
     env_file:
       - ./envs/nextcloud-whiteboard.env
