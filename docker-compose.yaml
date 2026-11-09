@@ -4,7 +4,7 @@ services:
     container_name: caddy
     depends_on:
       - nextcloud
-      - onlyoffice-documentserver
+      - euro-office-documentserver
     cap_drop:
       - ALL
     cap_add:
@@ -24,16 +24,21 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nextcloud:
-    image: docker.io/library/nextcloud:33-apache@sha256:d234808c4e63aad6889922228d64612a28682183dccaeac251db4db0be368aab
+    image: docker.io/library/nextcloud:35-apache@sha256:786c102155d2717ba0f53a62b3fdd7a1354edc48e800b94dbe32294d9a5752a2
     container_name: nextcloud
     env_file: 
       - ./envs/nextcloud.env
     depends_on:
       - nextcloud-postgres
       - nextcloud-redis
-      - onlyoffice-documentserver
+      - euro-office-documentserver
     cap_drop:
       - ALL
     cap_add:
@@ -56,6 +61,11 @@ services:
       - ./hooks/before-starting/:/docker-entrypoint-hooks.d/before-starting:ro
       - ./hooks/post-installation/:/docker-entrypoint-hooks.d/post-installation:ro
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nextcloud-postgres:
     image: cgr.dev/chainguard/postgres:latest@sha256:833bd9897f70176303e5a9347bdfb4596272176523b3d205dbad93e4adb62227
@@ -81,6 +91,11 @@ services:
     tmpfs:
       - /var/run/postgresql
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nextcloud-redis:
     image: cgr.dev/chainguard/redis:latest@sha256:a09b265c2968a699b2434d212ad4e4cf550bf8bad32a8ed3a0935b8c805d24b8
@@ -103,18 +118,23 @@ services:
       - nextcloud_redis_data:/data
       - ./configs/nextcloud-redis.conf:/etc/redis/redis.conf:ro
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     
-  onlyoffice-documentserver:
-    image: docker.io/onlyoffice/documentserver@sha256:e3da62a847b9a5d51a11f73cfea1d9c13c3be3809614490d4edddcf01dcf919b 
-    container_name: onlyoffice-documentserver
+  euro-office-documentserver:
+    image: ghcr.io/euro-office/documentserver:latest@sha256:2fadc1b3dc99250d6576fc0c0f34349db6725b752b08e91db9831fbb803fc5c2
+    container_name: euro-office-documentserver
     env_file: 
-      - ./envs/onlyoffice-documentserver.env
+      - ./envs/euro-office-documentserver.env
     depends_on:
-      - onlyoffice-postgres
-      - onlyoffice-rabbitmq
+      - euro-office-postgres
+      - euro-office-rabbitmq
     networks:
-      - onlyoffice_postgres
-      - onlyoffice-rabbitmq
+      - euro-office_postgres
+      - euro-office-rabbitmq
       - office
     cap_drop:
       - ALL
@@ -130,21 +150,26 @@ services:
       - no-new-privileges:true
     #stdin_open: true
     volumes:
-      - onlyoffice_data:/var/www/onlyoffice/Data
-      - onlyoffice_log:/var/log/onlyoffice
-      - onlyoffice_cache:/var/lib/onlyoffice
-      - onlyoffice_fonts:/usr/share/fonts
+      - euro-office_data:/var/www/euro-office/Data
+      - euro-office_log:/var/log/euro-office
+      - euro-office_cache:/var/lib/euro-office
+      - euro-office_fonts:/usr/share/fonts
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
-      - /etc/ssl/certs/ca-certificates.crt:/var/www/onlyoffice/Data/certs/extra-ca-certs.pem:ro
+      - /etc/ssl/certs/ca-certificates.crt:/var/www/euro-office/Data/certs/extra-ca-certs.pem:ro
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
        
-  onlyoffice-rabbitmq:
-    image: docker.io/rabbitmq:3@sha256:87178a0ee3e2f52980ba356d38646ed1056705ff2d5ff281f8965456eaa0c1e3
-    container_name: onlyoffice-rabbitmq
+  euro-office-rabbitmq:
+    image: docker.io/rabbitmq:4@sha256:485319d42170eab53d8a030e1cc49d95e41f5d325479fa504736db8091981eb7
+    container_name: euro-office-rabbitmq
     env_file: 
-      - ./envs/onlyoffice-rabbitmq.env
+      - ./envs/euro-office-rabbitmq.env
     networks:
-      - onlyoffice-rabbitmq
+      - euro-office-rabbitmq
     cap_drop:
       - ALL
     cap_add:
@@ -159,14 +184,19 @@ services:
       - /var/lib/rabbitmq
       - /tmp
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  onlyoffice-postgres:
+  euro-office-postgres:
     image: cgr.dev/chainguard/postgres:latest@sha256:833bd9897f70176303e5a9347bdfb4596272176523b3d205dbad93e4adb62227
-    container_name: onlyoffice-postgres
+    container_name: euro-office-postgres
     env_file: 
-      - ./envs/onlyoffice-postgres.env
+      - ./envs/euro-office-postgres.env
     networks:
-      - onlyoffice_postgres
+      - euro-office_postgres
     cap_drop:
       - ALL
     cap_add:
@@ -180,8 +210,13 @@ services:
       - no-new-privileges:true
     read_only: true
     volumes:
-      - onlyoffice_postgres_data:/var/lib/postgresql
+      - euro-office_postgres_data:/var/lib/postgresql
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nextcloud-whiteboard:
     image: ghcr.io/nextcloud-releases/whiteboard:stable@sha256:b60b7633f90d106ac6922f9bc27e1a1ca2442488b740fefdae4c812f34e9cebc
@@ -202,6 +237,11 @@ services:
     volumes:
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   nextcloud-postgres:
@@ -212,9 +252,9 @@ networks:
     internal: true
   nextcloud:
   office:
-  onlyoffice_postgres:
+  euro-office_postgres:
     internal: true
-  onlyoffice-rabbitmq:
+  euro-office-rabbitmq:
     internal: true
 
 volumes:
@@ -224,9 +264,9 @@ volumes:
   nextcloud_config:
   nextcloud_redis_data:
   nextcloud_postgres_data:
-  onlyoffice_log:
-  onlyoffice_data:
-  onlyoffice_cache:
-  onlyoffice_fonts:
-  onlyoffice_postgres_data:
+  euro-office_log:
+  euro-office_data:
+  euro-office_cache:
+  euro-office_fonts:
+  euro-office_postgres_data:
 
