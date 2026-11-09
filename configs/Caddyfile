@@ -22,5 +22,5 @@ https://office.domain.tld:443 {
     reverse_proxy nextcloud:80
   }
 
-  reverse_proxy onlyoffice-documentserver:80 
+  reverse_proxy euro-office-documentserver:80 
 }

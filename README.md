@@ -9,9 +9,9 @@ What's different to other deployments out in the wild?
 - BYO CA so you can connect to your internal services that are issued with your organizations certificates
 - S3 is the primary data storage for nextcloud
 - Caddy reverse proxy handles certificate management via ACME and terminates SSL
-- OnlyOffice integrated
+- Euro-Office integrated
 - Whiteboard integrated
-- All containers are read-only except nextcloud and onlyoffice-documentserver
+- All containers are read-only except nextcloud and euro-office-documentserver
 - All persistent data is written to named volumes
 - All containers are network-isolated and only allowed required connections
 - All containers have capabilities approriate to their tasks
@@ -33,7 +33,7 @@ What's different to other deployments out in the wild?
 
 2 domains
 - nextcloud.domain.tld
-- onlyoffice.domain.tld
+- office.domain.tld
 
 
 ## CA trust
@@ -55,7 +55,7 @@ Additionally, Nextcloud's Guzzle HTTP client ignores PHP's `curl.cainfo` setting
 `post-installation` hook scripts install the following apps 
 
 
-- [onlyoffice](https://apps.nextcloud.com/apps/onlyoffice)
+- [eurooffice](https://apps.nextcloud.com/apps/eurooffice) (shown as "Nextcloud Office" in the app store, requires Nextcloud 33+)
 - [whiteboard](https://apps.nextcloud.com/apps/whiteboard)
 - [oidc_login](https://apps.nextcloud.com/apps/oidc_login)
 - [calendar](https://apps.nextcloud.com/apps/calendar)
@@ -64,13 +64,13 @@ Additionally, Nextcloud's Guzzle HTTP client ignores PHP's `curl.cainfo` setting
 - [notes](https://apps.nextcloud.com/apps/notes)
 - [mail](https://apps.nextcloud.com/apps/mail)
 
-Recommended Nextcloud apps (https://nextcloud.domain.tld/index.php/core/apps/recommended) are installed, with exception to Nextcloud Talk and Nextcloud Office/Collabora. An addition to this list is the oidc_login and onlyoffice app. The official Nextcloud `user_oidc` requires `allow_local_remote_servers=true` to contact OIDC providers on private networks, which weakens Nextcloud's built-in SSRF protections. `oidc_login` works against internal providers without that trade-off.
+Recommended Nextcloud apps (https://nextcloud.domain.tld/index.php/core/apps/recommended) are installed, with exception to Nextcloud Talk and Nextcloud Office/Collabora. An addition to this list is the oidc_login and eurooffice app. The official Nextcloud `user_oidc` requires `allow_local_remote_servers=true` to contact OIDC providers on private networks, which weakens Nextcloud's built-in SSRF protections. `oidc_login` works against internal providers without that trade-off.
 
 
 ### The half-automatic way
-If JWT secrets for onlyoffice and whiteboard are configured (only) in their respective env files, you have to go to your Nextcloud instance and fill in these secrets for onlyoffice at https://nextcloud.domain.tld/settings/admin/onlyoffice and for whiteboard at https://nextcloud.domain.tld/whiteboard/
+If JWT secrets for Euro-Office and whiteboard are configured (only) in their respective env files, you have to go to your Nextcloud instance and fill in these secrets for Euro-Office at https://nextcloud.domain.tld/settings/admin/eurooffice and for whiteboard at https://nextcloud.domain.tld/whiteboard/
 
->**NOTE** Using JWT secrets in the post-installation scripts to auto-configure onlyoffice and whiteboard is basically broken. The scripts install, configure and enable the apps, but since the lack of ca trust during the entire installation phase (see CA trust above) both configurations are just pre-set. You are unfortunately still required to go to the two links above and click save, to apply and run the configuration.
+>**NOTE** Using JWT secrets in the post-installation scripts to auto-configure Euro-Office and whiteboard is basically broken. The scripts install, configure and enable the apps, but since the lack of ca trust during the entire installation phase (see CA trust above) both configurations are just pre-set. You are unfortunately still required to go to the two links above and click save, to apply and run the configuration.
 
 
 ## Deployment
@@ -82,19 +82,25 @@ git clone https://github.com/littleoffice/nextcloud_enclave.git
 Change domain.tld in:
 - configs/Caddyfile
 - envs/nextcloud.env
-- hooks/post-installation/onlyoffice.sh
+- hooks/post-installation/eurooffice.sh
 - hooks/post-installation/board.sh
 
 Change SECRET in:
 - configs/nextcloud-redis.conf
 - envs/nextcloud-postgres.env
 - envs/nextcloud.env
-- envs/onlyoffice-postgres.env
-- envs/onlyoffice-rabbitmq.env
-- envs/onlyoffice-documentserver.env
+- envs/euro-office-postgres.env
+- envs/euro-office-rabbitmq.env
+- envs/euro-office-documentserver.env
 
 ```
 podman-compose up -d 
+```
+
+To verify the Euro-Office connection from Nextcloud:
+
+```
+podman exec -u www-data nextcloud php occ eurooffice:documentserver --check
 ```
 
 | Deployment | Time |
@@ -146,7 +152,7 @@ Restoring from neb.sh <u>requires</u> a matching S3 bucket state from a compatib
 | S3 Storage| [RustFS](https://rustfs.com/)
 | CA/ACME service| [Step-CA](https://smallstep.com/)
 | OIDC provider| [Authentik](https://goauthentik.io/)
-| Office Suite | [OnlyOffice](https://www.onlyoffice.com/)
+| Office Suite | [Euro-Office](https://github.com/Euro-Office)
 | Cloud Suite | [Nextcloud](https://nextcloud.com/)
 ## Special thanks
 This project was made with the help of Claude and OpenAI.
