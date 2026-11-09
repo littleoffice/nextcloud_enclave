@@ -31,7 +31,7 @@ services:
         max-file: "3"
 
   nextcloud:
-    image: docker.io/library/nextcloud:35-apache
+    image: docker.io/library/nextcloud:35-apache@sha256:786c102155d2717ba0f53a62b3fdd7a1354edc48e800b94dbe32294d9a5752a2
     container_name: nextcloud
     env_file: 
       - ./envs/nextcloud.env
@@ -125,7 +125,7 @@ services:
         max-file: "3"
     
   euro-office-documentserver:
-    image: ghcr.io/euro-office/documentserver:latest
+    image: ghcr.io/euro-office/documentserver:latest@sha256:2fadc1b3dc99250d6576fc0c0f34349db6725b752b08e91db9831fbb803fc5c2
     container_name: euro-office-documentserver
     env_file: 
       - ./envs/euro-office-documentserver.env
@@ -164,7 +164,7 @@ services:
         max-file: "3"
        
   euro-office-rabbitmq:
-    image: docker.io/rabbitmq:4
+    image: docker.io/rabbitmq:4@sha256:485319d42170eab53d8a030e1cc49d95e41f5d325479fa504736db8091981eb7
     container_name: euro-office-rabbitmq
     env_file: 
       - ./envs/euro-office-rabbitmq.env
