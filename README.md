@@ -176,6 +176,22 @@ Restoring from neb.sh <u>requires</u> a matching S3 bucket state from a compatib
 ``` 
 
 
+## Renovate
+
+`.github/workflows/renovate.yml` runs Renovate daily and opens PRs that bump image tags and their pinned digests. Major version bumps (e.g. nextcloud 34 -> 35) wait for approval in the Dependency Dashboard issue.
+
+The workflow needs a `RENOVATE_TOKEN` repository secret. A fine-grained personal access token scoped to this repository works, with these permissions:
+
+- Contents: read and write
+- Pull requests: read and write
+- Issues: read and write
+- Workflows: read and write
+- Commit statuses: read and write
+- Dependabot alerts: read (optional, for vulnerability alerts)
+
+>**NOTE** When the token expires, every run fails with `github.com token 401 unauthorized`. Pick a long expiry and put a reminder in your calendar. GitHub also disables scheduled workflows after 60 days without repository activity. If that happens, re-enable it under Actions -> Renovate.
+
+
 ## Tested with
 
 | Component | Software |
