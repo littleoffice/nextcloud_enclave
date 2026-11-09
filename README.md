@@ -56,6 +56,7 @@ Additionally, Nextcloud's Guzzle HTTP client ignores PHP's `curl.cainfo` setting
 
 
 - [eurooffice](https://apps.nextcloud.com/apps/eurooffice) (shown as "Nextcloud Office" in the app store, requires Nextcloud 33+)
+- [office](https://apps.nextcloud.com/apps/office) (installed alongside eurooffice)
 - [whiteboard](https://apps.nextcloud.com/apps/whiteboard)
 - [oidc_login](https://apps.nextcloud.com/apps/oidc_login)
 - [calendar](https://apps.nextcloud.com/apps/calendar)
@@ -109,6 +110,38 @@ podman exec -u www-data nextcloud php occ eurooffice:documentserver --check
 | With apps |  ~90 seconds
 
 >**NOTE** Keep in mind that first logins can take a bit. Be patient
+
+
+### Upgrading from OnlyOffice
+
+>**WARNING** The switch from OnlyOffice to Euro-Office is a breaking change. Containers, networks, volumes, env files and the Nextcloud app were all renamed.
+
+| Before | After |
+|---|---|
+| `onlyoffice-documentserver`, `onlyoffice-postgres`, `onlyoffice-rabbitmq` | `euro-office-documentserver`, `euro-office-postgres`, `euro-office-rabbitmq` |
+| `envs/onlyoffice-*.env` | `envs/euro-office-*.env` |
+| `onlyoffice_*` volumes, `onlyoffice_postgres` network | `euro-office_*` volumes, `euro-office_postgres` network |
+| Nextcloud app `onlyoffice` | Nextcloud apps `eurooffice` and `office` |
+
+1. Stop the stack: `podman-compose down`.
+2. Rename your env files and change the hostnames inside them (`DB_HOST`, `AMQP_URI`) to the new `euro-office-*` container names.
+3. Nextcloud only supports upgrading one major version at a time. If you are on 33, start on `nextcloud:34-apache` first, let the upgrade finish, then switch to 35.
+4. `podman-compose up -d`. The document server starts with fresh volumes. The old `onlyoffice_*` volumes are no longer used and can be removed with `podman volume rm` once everything works.
+5. Post-installation hooks only run on a fresh install, so on an existing instance install the apps by hand:
+
+```
+podman exec -u www-data nextcloud php occ app:disable onlyoffice
+```
+
+```
+podman exec -u www-data nextcloud php occ app:install eurooffice
+```
+
+```
+podman exec -u www-data nextcloud php occ app:install office
+```
+
+6. Set the document server URL and JWT secret at https://nextcloud.domain.tld/settings/admin/eurooffice and click save.
 
 
 ### OIDC 
