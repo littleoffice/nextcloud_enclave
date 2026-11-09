@@ -6,8 +6,10 @@ name: Renovate
 
 on:
   schedule:
-    # Daily at 04:00 UTC. The renovate.json schedule narrows the actual
-    # window further (Europe/Berlin), this cron just wakes the runner up.
+    # Daily at 04:00 UTC. This cron is the only schedule: renovate.json
+    # deliberately has no "schedule" of its own. GitHub starts scheduled runs
+    # late (often 30-60 min), so a second time window in renovate.json
+    # silently turns runs into no-ops ("Awaiting Schedule").
     # NOTE: GitHub only fires `schedule` (and shows `workflow_dispatch`)
     # for workflows present on the DEFAULT branch. On a feature branch
     # this file does nothing at all.

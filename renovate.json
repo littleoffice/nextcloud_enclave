@@ -6,7 +6,6 @@
     "docker:enableMajor"
   ],
   "timezone": "Europe/Berlin",
-  "schedule": ["before 06:00"],
   "labels": ["dependencies"],
   "commitMessagePrefix": "chore(deps):",
   "prConcurrentLimit": 5,
